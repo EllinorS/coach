@@ -23,7 +23,7 @@ export const sendVerificationMail = async (email, token) => {
     subject: "Confirm your email",
     html: `<h2> Welcome ${email} ! </h2>
         <p> Thank you for your registration. Please click the link below to verify your email.</p> <br/>
-        <a href="http://localhost:3000/api/auth/verify?token=${token}">Verify my email</a>
+        <a href="${process.env.CLIENT_URL}/api/auth/verify?token=${token}">Verify my email</a>
         `,
   });
 };
@@ -35,7 +35,7 @@ export const sendResetPasswordEmail = async (email, token) => {
     subject: "Reset password",
     html: `<h2>   Bienvenue ${email} ! </h2>
         <p> Click the link to reset your password: </p> <br/>
-        <a href="http://localhost:3000/api/auth/reset-password-request?token=${token}">reset my password</a>`,
+        <a href="${process.env.CLIENT_URL}/api/auth/reset-password-request?token=${token}">reset my password</a>`,
   });
 };
 

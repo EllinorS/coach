@@ -22,6 +22,7 @@ CREATE TABLE users (
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
   is_verified BOOLEAN DEFAULT FALSE,
   verify_token VARCHAR(36),
   reset_token VARCHAR(36),
@@ -37,7 +38,7 @@ CREATE TABLE users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
--- MEDIA (VERSION PROPRE + SCALABLE)
+-- MEDIA
 -------------------
 CREATE TABLE media (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -112,7 +113,6 @@ CREATE TABLE time_slots (
   start_time TIME NOT NULL,
   end_time TIME NOT NULL,
   spots_total INT NOT NULL,
-  spots_taken INT DEFAULT 0,
   is_cancelled TINYINT(1) DEFAULT 0,
   cancel_reason VARCHAR(500),
   notes TEXT,
@@ -271,6 +271,26 @@ CREATE TABLE site_content (
   page VARCHAR(50),
   label VARCHAR(255),
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-------------------
+-- CONTACT FORMS
+-------------------
+
+CREATE TABLE contact_messages (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL,
+  last_name  VARCHAR(100),
+  email      VARCHAR(255) NOT NULL,
+  phone      VARCHAR(50),
+  subject    VARCHAR(255),
+  message    TEXT         NOT NULL,
+  status     ENUM('NEW','READ','REPLIED','ARCHIVED') DEFAULT 'NEW',
+  notes      TEXT,                          -- notes internes du coach
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_email  (email),
+  INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
