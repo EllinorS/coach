@@ -33,9 +33,9 @@ export const sendResetPasswordEmail = async (email, token) => {
     from: "Verification API  <ellinor.st@gmail.com>",
     to: email,
     subject: "Reset password",
-    html: `<h2>   Bienvenue ${email} ! </h2>
+    html: `<h2>   Hi ${email} ! </h2>
         <p> Click the link to reset your password: </p> <br/>
-        <a href="${process.env.CLIENT_URL}/api/auth/reset-password-request?token=${token}">reset my password</a>`,
+        <a href="${process.env.CLIENT_URL}/api/auth/reset-password?token=${token}">reset my password</a>`,
   });
 };
 

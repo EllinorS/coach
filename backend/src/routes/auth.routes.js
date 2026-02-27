@@ -26,6 +26,6 @@ router.post(
   resetPasswordRequest,
 );
 router.post("/reset-password", resetPasswordSchema, resetPassword);
-router.post("/logout", authMiddleware, logout);
+router.post("/logout", authMiddleware);
 
 export default router;

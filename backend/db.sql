@@ -47,7 +47,6 @@ CREATE TABLE media (
   folder VARCHAR(255),
   storage_disk VARCHAR(50) DEFAULT 'local',
   mime_type VARCHAR(100),
-  file_hash CHAR(64),
   size_bytes INT,
   alt VARCHAR(255),
   uploaded_by INT,
@@ -294,7 +293,7 @@ CREATE TABLE contact_messages (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
--- FOREIGN KEYS AJOUTÉES APRÈS (CIRCULAIRES)
+-- FOREIGN KEYS
 -------------------
 ALTER TABLE media
 ADD CONSTRAINT fk_media_user
