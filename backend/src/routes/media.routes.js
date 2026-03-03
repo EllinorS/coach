@@ -10,7 +10,7 @@ const router = express.Router()
 router.post('/', authMiddleware, roleMiddleware("SUPER_ADMIN"), upload.array('files',10), createMediaSchema, createMedia)
 router.get('/', getAllMedia)
 router.get('/:id', getMediaById)
-router.patch('/:id',  authMiddleware, roleMiddleware("SUPER_ADMIN"),  createMediaSchema, updateMediaById)
+router.put('/:id',  authMiddleware, roleMiddleware("SUPER_ADMIN"),  createMediaSchema, updateMediaById)
 router.delete('/:id',  authMiddleware, roleMiddleware("SUPER_ADMIN"), deleteMedia)
 
 export default router

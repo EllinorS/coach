@@ -18,20 +18,6 @@ export const createLesson = asyncHandler(async (req, res) => {
     position,
   } = req.body;
 
-  if (
-    !lessonTypeId ||
-    !title ||
-    !description ||
-    !shortDesc ||
-    !price ||
-    !depositAmount ||
-    !durationMin ||
-    !maxParticipants ||
-    !level
-  ) {
-    return res.status(400).json({ message: "please fill all the fields" });
-  }
-
   const createdlesson = await lessonModel.createLesson(
     lessonTypeId,
     title,
@@ -74,16 +60,17 @@ export const updateLesson = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "lesson not found." });
 
   const updatedData = {
-    lessonTypeId: req.body.lessonTypeId ?? existingLesson.lessonTypeId,
+    lessonTypeId: req.body.lessonTypeId ?? existingLesson.lesson_type_id,
     title: req.body.title ?? existingLesson.title,
     description: req.body.description ?? existingLesson.description,
-    shortDesc: req.body.shortDesc ?? existingLesson.shortDesc,
+    shortDesc: req.body.shortDesc ?? existingLesson.short_desc,
     price: req.body.price ?? existingLesson.price,
-    depositAmount: req.body.depositAmount ?? existingLesson.depositAmount,
-    durationMin: req.body.durationMin ?? existingLesson.durationMin,
-    maxParticipants: req.body.maxParticipants ?? existingLesson.maxParticipants,
+    depositAmount: req.body.depositAmount ?? existingLesson.deposit_amount,
+    durationMin: req.body.durationMin ?? existingLesson.duration_min,
+    maxParticipants:
+      req.body.maxParticipants ?? existingLesson.max_participants,
     level: req.body.level ?? existingLesson.level,
-    isVisible: req.body.isVisible ?? existingLesson.isVisible,
+    isVisible: req.body.isVisible ?? existingLesson.is_visible,
     position: req.body.position ?? existingLesson.position,
   };
 
@@ -101,8 +88,6 @@ export const deleteLesson = asyncHandler(async (req, res) => {
   if (!existingLesson)
     return res.status(404).json({ message: "Lesson not found." });
 
-  await lessonModel.deleteLessonById(id)
-    res.status(200).json({ message: "Lesson deleted" });
-
-
+  await lessonModel.deleteLessonById(id);
+  res.status(200).json({ message: "Lesson deleted" });
 });

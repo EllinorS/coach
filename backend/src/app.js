@@ -9,7 +9,7 @@ import { roleMiddleware } from "./middlewares/role.middleware.js";
 
 import authRoutes from "./routes/auth.routes.js";
 // import bookingRoutes from "./routes/booking.routes.js";
-// import lessonRoutes from "./routes/lesson.routes.js";
+import lessonRoutes from "./routes/lesson.routes.js";
 import lessonTypeRoutes from "./routes/lessonType.routes.js";
 import mediaRoutes from "./routes/media.routes.js";
 // import paymentRoutes from "./routes/payment.routes.js";
@@ -62,7 +62,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 // app.use("/api/bookings", bookingRoutes);
-// app.use("/api/lessons", lessonRoutes);
+app.use("/api/lessons", lessonRoutes);
 app.use("/api/lesson-types", lessonTypeRoutes);
 app.use("/api/media", mediaRoutes);
 // app.use("/api/payments", paymentRoutes);

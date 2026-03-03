@@ -16,6 +16,7 @@ transporter.verify((err, success) => {
   else console.log("SMTP connected");
 });
 
+// verification email for authentification / register
 export const sendVerificationMail = async (email, token) => {
   await transporter.sendMail({
     from: "Authentication API <ellinor.st@gmail.com>",
@@ -27,7 +28,7 @@ export const sendVerificationMail = async (email, token) => {
         `,
   });
 };
-
+// reset password
 export const sendResetPasswordEmail = async (email, token) => {
   await transporter.sendMail({
     from: "Verification API  <ellinor.st@gmail.com>",
@@ -39,3 +40,16 @@ export const sendResetPasswordEmail = async (email, token) => {
   });
 };
 
+// booking confirmation
+
+export const bookingConfirmationEmail = async (name, email, lessonType, date, startTime, endTime) => {
+  await transporter.sendMail({
+    from: "Wave Coach <ellinor.st@gmail.com>",
+    to: email,
+    subject: "Booking confirmation",
+    html: `<h2>   Hi ${name} ! </h2>
+        <p>Your ${lessonType} is confirmed for ${date} from ${startTime} to ${endTime}<br/>
+        Need to cancel ?</p> 
+        <a href="#">please follow this link</a>`,
+  });
+};

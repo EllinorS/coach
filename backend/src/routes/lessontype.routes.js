@@ -13,7 +13,7 @@ const router = express.Router()
 router.post('/', authMiddleware, roleMiddleware("SUPER_ADMIN"), createLessonTypeSchema,createLessonType)
 router.get('/', getAllLessonType)
 router.get('/:id', getLessonTypeById)
-router.patch('/:id', authMiddleware, roleMiddleware("SUPER_ADMIN"), updateLessonType)
+router.put('/:id', authMiddleware, roleMiddleware("SUPER_ADMIN"), updateLessonType)
 router.delete('/:id', authMiddleware, roleMiddleware("SUPER_ADMIN"), deleteLessonType)
 
 export default router;
