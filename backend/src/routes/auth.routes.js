@@ -5,6 +5,7 @@ import {
   resetPassword,
   resetPasswordRequest,
   verifyEmail,
+  connectedUser
 } from "../controllers/auth.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js"
 import {
@@ -26,6 +27,7 @@ router.post(
   resetPasswordRequest,
 );
 router.post("/reset-password", resetPasswordSchema, resetPassword);
-router.post("/logout", authMiddleware);
+
+router.get('/user', authMiddleware, connectedUser)
 
 export default router;

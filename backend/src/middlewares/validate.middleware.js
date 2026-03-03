@@ -92,3 +92,36 @@ export const createMediaSchema = (req, res, next) => {
   }
 }
 
+// create lesson type
+
+export const createLessonTypeSchema = (req, res, next) => {
+  const schema = z.object({
+    name: z.string().min(1).max(100),
+    slug : z.string().min(1).max(100),
+    description: z.string().max(500).optional()
+  })
+    try {
+    schema.parse(req.body);
+    next();
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: error.issues.map((err) => err.message).join(", ") });
+  }
+}
+
+// create lesson
+
+export const createLesson = (req, res, next) =>{
+  const schema = z.object({
+    lessonTypeId: z.number(),
+    title: z.string().min(3),
+    description: z.,
+    shortDesc: z.,
+    price: z.,
+    depositAmount: z.,
+    durationMin: z.,
+    maxParticipants: z.,
+    level: z.,
+  })
+}

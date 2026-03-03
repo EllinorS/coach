@@ -37,6 +37,7 @@ export const register = asyncHandler(async (req, res) => {
       req.file.mimetype,
       req.file.size,
       null,
+      null
     );
   }
 
@@ -105,6 +106,22 @@ export const login = asyncHandler(async (req, res) => {
     },
   });
 });
+
+// Connected profile
+
+export const connectedUser = asyncHandler(async (req, res) => {
+  const user = await authModel.findUserById(req.user.id)
+  if(!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json({
+    id: user.id,
+    email: user.email,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    role: user.role,
+    lastLogin: user.last_login,
+    avatarMediaId: user.avatar_media_id,
+  });
+})
 
 // ResetPassword Request
 

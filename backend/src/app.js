@@ -10,7 +10,7 @@ import { roleMiddleware } from "./middlewares/role.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 // import bookingRoutes from "./routes/booking.routes.js";
 // import lessonRoutes from "./routes/lesson.routes.js";
-// import lessonTypeRoutes from "./routes/lessonType.routes.js";
+import lessonTypeRoutes from "./routes/lessonType.routes.js";
 import mediaRoutes from "./routes/media.routes.js";
 // import paymentRoutes from "./routes/payment.routes.js";
 // import quizRoutes from "./routes/quiz.routes.js";
@@ -31,7 +31,7 @@ app.use(
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL || true,
     credentials: true,
   }),
 );
@@ -58,31 +58,20 @@ app.use(
     },
   }),
 );
+ // public routes
 
 app.use("/api/auth", authRoutes);
 // app.use("/api/bookings", bookingRoutes);
 // app.use("/api/lessons", lessonRoutes);
-// app.use("/api/lesson-types", lessonTypeRoutes);
-// app.use("/api/media", mediaRoutes);
+app.use("/api/lesson-types", lessonTypeRoutes);
+app.use("/api/media", mediaRoutes);
 // app.use("/api/payments", paymentRoutes);
 // app.use("/api/quiz", quizRoutes);
 // app.use("/api/reviews", reviewRoutes);
 // app.use("/api/content", siteContentRoutes);
 // app.use("/api/slots", slotRoutes);
 // app.use("/api/trip-request", tripRoutes);
-
-// app.use("/api/admin/users", authMiddleware, roleMiddleware("SUPER_ADMIN"), userRoutes);
-// app.use("/api/admin/lessons", authMiddleware, roleMiddleware("SUPER_ADMIN"), lessonRoutes);
-// app.use("/api/admin/lesson-types", authMiddleware, roleMiddleware("SUPER_ADMIN"), lessonTypeRoutes);
-// app.use("/api/admin/slots", authMiddleware, roleMiddleware("SUPER_ADMIN"), slotRoutes);
-// app.use("/api/admin/bookings", authMiddleware, roleMiddleware("SUPER_ADMIN"), bookingRoutes);
-// app.use("/api/admin/payments", authMiddleware, roleMiddleware("SUPER_ADMIN"), paymentRoutes);
-// app.use("/api/admin/trip-requests", authMiddleware, roleMiddleware("SUPER_ADMIN"), tripRoutes);
-// app.use("/api/admin/quiz", authMiddleware, roleMiddleware("SUPER_ADMIN"), quizRoutes);
-// app.use("/api/admin/reviews", authMiddleware, roleMiddleware("SUPER_ADMIN"), reviewRoutes);
-app.use("/api/admin/media", authMiddleware, roleMiddleware("SUPER_ADMIN"), mediaRoutes);
-// app.use("/api/admin/content", authMiddleware, roleMiddleware("SUPER_ADMIN"), siteContentRoutes);
-// app.use("/api/admin/contact", authMiddleware, roleMiddleware("SUPER_ADMIN"), contactRoutes);
+// app.use("/api/users", userRoutes);
 
 app.use(errorHandler);
 

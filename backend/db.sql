@@ -27,14 +27,16 @@ CREATE TABLE users (
   verify_token VARCHAR(36),
   reset_token VARCHAR(36),
   avatar_media_id INT NULL,
-  is_active TINYINT(1) DEFAULT 1,
+  is_active BOOLEAN DEFAULT 1,
   last_login DATETIME,
+  reset_token_expires_at DATETIME NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (role_id) REFERENCES roles(id),
   INDEX idx_email (email),
   INDEX idx_verify (verify_token),
-  INDEX idx_reset (reset_token)
+  INDEX idx_reset (reset_token),
+  INDEX idx_role (role_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
@@ -51,8 +53,7 @@ CREATE TABLE media (
   alt VARCHAR(255),
   uploaded_by INT,
   uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_uploaded_by (uploaded_by),
-  INDEX idx_hash (file_hash)
+  INDEX idx_uploaded_by (uploaded_by)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
@@ -63,8 +64,8 @@ CREATE TABLE lesson_types (
   name VARCHAR(100) NOT NULL UNIQUE,
   slug VARCHAR(100) NOT NULL UNIQUE,
   description VARCHAR(500),
-  is_active TINYINT(1) DEFAULT 1,
   position INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -82,11 +83,12 @@ CREATE TABLE lessons (
   duration_minutes INT NOT NULL,
   max_participants INT NOT NULL,
   level ENUM('ALL','BEGINNER','INTERMEDIATE','ADVANCED') DEFAULT 'ALL',
-  is_visible TINYINT(1) DEFAULT 1,
+  is_visible BOOLEAN DEFAULT 1,
   position INT DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (lesson_type_id) REFERENCES lesson_types(id)
+  FOREIGN KEY (lesson_type_id) REFERENCES lesson_types(id),
+  INDEX idx_lesson_type (lesson_type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
@@ -96,10 +98,12 @@ CREATE TABLE lesson_media (
   id INT AUTO_INCREMENT PRIMARY KEY,
   lesson_id INT NOT NULL,
   media_id INT NOT NULL,
-  is_cover TINYINT(1) DEFAULT 0,
+  is_cover BOOLEAN DEFAULT 0,
   position INT DEFAULT 0,
+  UNIQUE KEY unique_lesson_media (lesson_id, media_id),
   FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
-  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE
+  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE CASCADE,
+  INDEX idx_lesson (lesson_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
@@ -112,13 +116,15 @@ CREATE TABLE time_slots (
   start_time TIME NOT NULL,
   end_time TIME NOT NULL,
   spots_total INT NOT NULL,
-  is_cancelled TINYINT(1) DEFAULT 0,
+  is_cancelled BOOLEAN DEFAULT 0,
   cancel_reason VARCHAR(500),
   notes TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_time_slot (lesson_id, date, start_time),
   FOREIGN KEY (lesson_id) REFERENCES lessons(id),
   INDEX idx_date (date),
+  INDEX idx_lesson (lesson_id),
   INDEX idx_lesson_date (lesson_id,date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -157,7 +163,7 @@ CREATE TABLE payments (
   type ENUM('DEPOSIT','BALANCE') NOT NULL,
   method ENUM('STRIPE','ON_SITE','BANK_TRANSFER') NOT NULL,
   status ENUM('PENDING','PAID','FAILED','REFUNDED') DEFAULT 'PENDING',
-  stripe_payment_intent_id VARCHAR(255),
+  stripe_payment_intent_id VARCHAR(255) UNIQUE,
   stripe_charge_id VARCHAR(255),
   paid_at DATETIME,
   refunded_at DATETIME,
@@ -181,7 +187,7 @@ CREATE TABLE surf_trip_requests (
   period      VARCHAR(100),
   group_size  INT,
   budget      ENUM('BUDGET','MEDIUM','COMFORT','LUXURY'),
-  wants_video TINYINT(1)  DEFAULT 0,
+  wants_video BOOLEAN  DEFAULT 0,
   status      ENUM('NEW','CONTACTED','IN_PROGRESS','QUOTED','CLOSED','CANCELLED') DEFAULT 'NEW',
   coach_notes TEXT,
   quoted_at   DATETIME,
@@ -201,8 +207,8 @@ CREATE TABLE quiz_questions (
   label       TEXT         NOT NULL,
   type        ENUM('SINGLE','MULTIPLE','RANK','TEXT') NOT NULL,
   section     VARCHAR(100),
-  is_required TINYINT(1)  DEFAULT 1,
-  is_active   TINYINT(1)  DEFAULT 1,
+  is_required BOOLEAN  DEFAULT 1,
+  is_active   BOOLEAN  DEFAULT 1,
   position    INT         DEFAULT 0,
   created_at  DATETIME    DEFAULT CURRENT_TIMESTAMP,
   updated_at  DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -218,8 +224,10 @@ CREATE TABLE quiz_options (
   label       TEXT         NOT NULL,
   value       VARCHAR(100) NOT NULL,
   position    INT          DEFAULT 0,
-  is_active   TINYINT(1)   DEFAULT 1
+  is_active   BOOLEAN   DEFAULT 1,
+  INDEX idx_question (question_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -------------------
 -- QUIZ USERS ANSWERS
@@ -229,14 +237,18 @@ CREATE TABLE quiz_answers (
   request_id  INT  NOT NULL,
   question_id INT  NOT NULL,
   text_value  TEXT,
-  INDEX idx_request (request_id)
+  INDEX idx_request (request_id),
+  INDEX idx_question (question_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE quiz_answer_options (
   id        INT AUTO_INCREMENT PRIMARY KEY,
   answer_id INT  NOT NULL,
   option_id INT  NOT NULL,
-  rank      INT  NULL
+  rank      INT  NULL,
+  UNIQUE KEY unique_answer_option (answer_id, option_id),
+  INDEX idx_answer (answer_id),
+  INDEX idx_option (option_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -252,7 +264,7 @@ CREATE TABLE reviews (
   rating TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
   product_type ENUM('COURSE','TRIP','GENERAL') NOT NULL,
   source VARCHAR(100),
-  is_visible TINYINT(1) DEFAULT 1,
+  is_visible BOOLEAN DEFAULT 1,
   position INT DEFAULT 0,
   review_date DATE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP

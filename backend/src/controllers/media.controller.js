@@ -11,7 +11,7 @@ export const createMedia = asyncHandler(async (req, res) => {
 
   const { folder, alt, lessonId } = req.body;
   const uploadedBy = req.user?.id || null;
-  const mediaIds = [];
+  const mediaArray = [];
 
   for (const file of req.files) {
     const filename = file.filename;
@@ -19,7 +19,7 @@ export const createMedia = asyncHandler(async (req, res) => {
     const mimeType = file.mimetype;
     const size = file.size;
 
-    const mediaId = await mediaModel.createMedia(
+    const createdMedia = await mediaModel.createMedia(
       filename,
       url,
       folder || null,
@@ -32,18 +32,16 @@ export const createMedia = asyncHandler(async (req, res) => {
     if (lessonId) {
       await mediaModel.attachMediaToLesson({
         lessonId: Number(lessonId),
-        mediaId,
+        mediaId: createdMedia,
         isCover: 0,
-        position: mediaIds.length,
+        position: mediaArray.length,
       });
     }
-
-    mediaIds.push(mediaId);
+    mediaArray.push(createdMedia);
   }
-
   res
     .status(201)
-    .json({ message: `${mediaIds.length} file(s) uploaded`, mediaIds });
+    .json({ message: `${mediaArray.length} file(s) uploaded`, mediaArray });
 });
 
 // get all media
@@ -56,9 +54,10 @@ export const getAllMedia = asyncHandler(async (req, res) => {
 
 export const getMediaById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const media = await mediaModel.findMediaById(id);
-  if (!media) return res.status(404).json({ message: "Media not found" });
-  res.status(200).json(media);
+  const exisitingMedia = await mediaModel.findMediaById(id);
+  if (!exisitingMedia)
+    return res.status(404).json({ message: "Media not found" });
+  res.status(200).json(exisitingMedia);
 });
 
 // update media by id
@@ -76,7 +75,7 @@ export const updateMediaById = asyncHandler(async (req, res) => {
 
   await mediaModel.updateMedia(id, updatedData);
 
-  res.status(200).json({message: "media updated"});
+  res.status(200).json({ message: "media updated" });
 });
 
 // delete media

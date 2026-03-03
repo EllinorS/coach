@@ -22,14 +22,23 @@ export const createUser = async (
 
 export const findUserByEmail = async (email) => {
   const [rows] = await db.query(
-    `SELECT u.*, r.name AS role
-       FROM users u
-       JOIN roles r ON r.id = u.role_id
-       WHERE u.email = ?`,
+    `SELECT users.*, roles.name AS role
+       FROM users
+       JOIN roles ON roles.id = users.role_id
+       WHERE users.email = ?`,
     [email],
   );
   return rows[0];
 };
+
+// finnd user by id
+
+export const findUserById = async (id) => {
+ const [rows] = await db.query(
+  `SELECT users.id, users.email, users.first_name, users.last_name, users.avatar_media_id, users.last_login, roles.name AS role FROM users JOIN. roles ON roles.id = users.role_id WHERE users.id = ? AND users.is_active = 1`, [id]
+ )
+ return rows[0] || null
+}
 
 // find user to verify email link
 
