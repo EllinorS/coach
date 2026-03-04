@@ -152,3 +152,28 @@ export const createSlotSchema = (req, res, next) => {
       .json({ message: error.issues.map((err) => err.message).join(", ") });
   }
 };
+
+export const createBookingSchema = (req, res, next) => {
+  const schema = z.object({
+    clientName: z.string().max(255),
+    clientEmail: z.email(),
+    clientPhone: z.string().max(50).optional(),
+    clientCountry: z.string().max(100).optional(),
+    nbParticipants: z.number(),
+    bookingStatus: z.enum(["PENDING","CONFIRMED","CANCELLED"]).optional(),
+    cancelReason: z.string().max(500).optional(),
+    notes: z.string().optional(),
+    internalNotes: z.string().optional(),
+    paymentStatus: z.enum(["UNPAID","DEPOSIT_PAID","FULLY_PAID","REFUNDED"]).optional(),
+  });
+    try {
+    schema.parse(req.body);
+    next();
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: error.issues.map((err) => err.message).join(", ") });
+  }
+};
+
+

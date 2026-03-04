@@ -67,8 +67,7 @@ export const updateLesson = asyncHandler(async (req, res) => {
     price: req.body.price ?? existingLesson.price,
     depositAmount: req.body.depositAmount ?? existingLesson.deposit_amount,
     durationMin: req.body.durationMin ?? existingLesson.duration_min,
-    maxParticipants:
-      req.body.maxParticipants ?? existingLesson.max_participants,
+    maxParticipants: req.body.maxParticipants ?? existingLesson.max_participants,
     level: req.body.level ?? existingLesson.level,
     isVisible: req.body.isVisible ?? existingLesson.is_visible,
     position: req.body.position ?? existingLesson.position,

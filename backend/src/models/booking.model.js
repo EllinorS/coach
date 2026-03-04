@@ -8,27 +8,29 @@ export const createBooking = async (
   clientEmail,
   clientPhone,
   clientCountry,
-  participants,
+  nbParticipants,
   bookingStatus,
   cancelReason,
   notes,
   internalNotes,
   paymentStatus,
+  cancelToken
 ) => {
   const [result] = await db.query(
-    `INSERT INTO bookings (slot_id, client_name, client_email, client_phone, client_country, participants, status, cancel_reason, notes, internal_notes, payment_status) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    `INSERT INTO bookings (slot_id, client_name, client_email, client_phone, client_country, participants, status, cancel_reason, notes, internal_notes, payment_status, cancel_token) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
     [
       slotId,
       clientName,
       clientEmail,
       clientPhone,
       clientCountry,
-      participants,
+      nbParticipants,
       bookingStatus,
       cancelReason,
       notes,
       internalNotes,
       paymentStatus,
+      cancelToken
     ],
   );
   return result.insertId;
@@ -49,6 +51,14 @@ export const findBookingById = async (bookingId) => {
   ]);
   return rows[0];
 };
+// count confirmed bookings by slot id
+
+export const countConfirmedBookingsbySlotId = async (slotId) => {
+  const [rows] = await db.query(
+`SELECT COUNT(*) AS total FROM bookings WHERE slot_id = ? AND status != 'CANCELLED'`, [slotId]
+  )
+  return rows[0].total
+}
 
 // update booking
 
@@ -81,3 +91,15 @@ export const deleteBookingById = async (bookingId) => {
   ]);
   return result.affectedRows;
 };
+
+
+// option for client to cancel their booking
+
+export const findBookingByCancelToken = async (token) => {
+  const [rows] = await db.query(`SELECT * FROM bookings WHERE cancel_token =? AND cancel_token_expires_at > NOW() `, [token])
+  return rows[0]
+}
+
+export const cancelBooking = async (bookingId) => {
+  await db.query(`UPDATE bookings SET status='CANCELLED' , cancel_token=NULL WHERE id =? `,[bookingId])
+}

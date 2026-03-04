@@ -144,6 +144,8 @@ CREATE TABLE bookings (
   notes TEXT,
   internal_notes TEXT,
   payment_status ENUM('UNPAID','DEPOSIT_PAID','FULLY_PAID','REFUNDED') DEFAULT 'UNPAID',
+  cancel_token VARCHAR(36) UNIQUE,
+  cancel_token_expires_at DATETIME NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (slot_id) REFERENCES time_slots(id),

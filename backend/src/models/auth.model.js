@@ -61,8 +61,7 @@ export const verifyUser = async (userId) => {
 // find user with a valid token to reset password
 export const findUserByResetToken = async (token) => {
   const [rows] = await db.query(`SELECT * FROM users WHERE reset_token=? AND reset_token_expires_at > NOW()`, [
-    token,
-  ]);
+    token  ]);
   return rows[0];
 };
 
