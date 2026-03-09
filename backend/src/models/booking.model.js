@@ -4,37 +4,48 @@ import { db } from "../config/db.js";
 
 export const createBooking = async (
   slotId,
+  multipleBookingId,
   clientName,
-  clientEmail,
-  clientPhone,
-  clientCountry,
+  email,
+  phone,
+  country,
   nbParticipants,
   bookingStatus,
   cancelReason,
   notes,
   internalNotes,
   paymentStatus,
-  cancelToken
+  cancelToken,
+  cancelTokenExpiresAt
 ) => {
   const [result] = await db.query(
-    `INSERT INTO bookings (slot_id, client_name, client_email, client_phone, client_country, participants, status, cancel_reason, notes, internal_notes, payment_status, cancel_token) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    `INSERT INTO bookings (slot_id, multiple_booking_id, client_name, client_email, client_phone, client_country, participants, status, cancel_reason, notes, internal_notes, payment_status, cancel_token, cancel_token_expires_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [
       slotId,
+      multipleBookingId,
       clientName,
-      clientEmail,
-      clientPhone,
-      clientCountry,
+      email,
+      phone,
+      country,
       nbParticipants,
       bookingStatus,
       cancelReason,
       notes,
       internalNotes,
       paymentStatus,
-      cancelToken
+      cancelToken,
+      cancelTokenExpiresAt
     ],
   );
   return result.insertId;
 };
+
+// create booking for multiple lessons 
+
+export const createMultiple = async (email, lessonId, totalPrice, bookingStatus) => {
+  const [result] = await db.query(`INSERT INTO booking_multiple (client_email, lesson_id, total_price, status) VALUES (?, ?, ?,?)`, [email, lessonId, totalPrice, bookingStatus])
+  return result.insertId
+}
 
 // find all bookings
 
@@ -68,9 +79,9 @@ export const updateBooking = async (bookingId, data) => {
     [
       data.slotId,
       data.clientName,
-      data.clientEmail,
-      data.clientPhone,
-      data.clientCountry,
+      data.email,
+      data.phone,
+      data.country,
       data.participants,
       data.bookingStatus,
       data.cancelReason,
@@ -101,5 +112,5 @@ export const findBookingByCancelToken = async (token) => {
 }
 
 export const cancelBooking = async (bookingId) => {
-  await db.query(`UPDATE bookings SET status='CANCELLED' , cancel_token=NULL WHERE id =? `,[bookingId])
+  await db.query(`UPDATE bookings SET status='CANCELLED' , cancel_token=NULL, internal_notes='Client cancelled - offer alternative slot'  WHERE id =? `,[bookingId])
 }

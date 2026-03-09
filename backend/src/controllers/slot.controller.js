@@ -1,10 +1,11 @@
+import { cancellationEmail } from "../config/mailer.js";
 import asyncHandler from "../middlewares/asyncHandler.middleware.js";
 import * as slotModel from "../models/slot.model.js";
 
 // create slot
 export const createSlot = asyncHandler(async (req, res) => {
   const {
-    LessonId,
+    lessonId,
     date,
     startTime,
     endTime,
@@ -15,7 +16,7 @@ export const createSlot = asyncHandler(async (req, res) => {
   } = req.body;
 
   const createdSlot = await slotModel.createSlot(
-    LessonId,
+    lessonId,
     date,
     startTime,
     endTime,
@@ -42,7 +43,7 @@ export const getSlotsById = asyncHandler(async (req, res) => {
   res.json(slot);
 });
 
-// get slots by lessonn id
+// get slots by lesson id
 
 export const getSlotsByLessonId = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -76,6 +77,36 @@ export const updateSlot = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "slot updated" });
 });
 
+// cancel slot 
+
+export const cancelSlot = asyncHandler(async(req,res) => {
+  const {id} = req.params
+  const {cancelReason} = req.body
+
+  const existingSlot = await slotModel.findSlotById(id);
+if (!existingSlot) return res.status(404).json({ message: "Slot not found." })
+if (existingSlot.is_cancelled) return res.status(400).json({ message: "Slot already cancelled." })
+
+  const clients = await slotModel.findBookingsBySlotId(id)
+  await slotModel.cancelSlotAndBooking(id, cancelReason)
+  
+  for (const client of clients) {
+  await cancellationEmail(
+    client.client_name,
+    client.client_email,
+    existingSlot.lesson_type,
+    existingSlot.date,
+    existingSlot.start_time,
+    existingSlot.end_time,
+    cancelReason,
+    client.payment_status
+  )
+  }
+
+res.status(200).json({ message: "Slot cancelled and clients notified." })
+
+})
+
 // delete slot
 
 export const deleteSlot = asyncHandler(async (req, res) => {
@@ -88,3 +119,4 @@ export const deleteSlot = asyncHandler(async (req, res) => {
   await slotModel.deleteSlotById(id)
     res.status(200).json({ message: "Slot deleted" });
 });
+

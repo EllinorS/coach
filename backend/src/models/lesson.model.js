@@ -4,6 +4,9 @@ import { db } from "../config/db.js";
 
 export const createLesson = async (
   lessonTypeId,
+  linkedLessonId,
+  type,
+  sessionsCount,
   title,
   description,
   shortDesc,
@@ -16,9 +19,12 @@ export const createLesson = async (
   position,
 ) => {
   const [result] = await db.query(
-    `INSERT INTO lessons (lesson_type_id, title, description, short_desc,  price, deposit_amount, duration_minutes, max_participants, level, is_visible, position) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    `INSERT INTO lessons (lesson_type_id, linked_lesson_id, type, sessions_count, title, description, short_desc,  price, deposit_amount, duration_minutes, max_participants, level, is_visible, position) VALUES (?,?,?,?,?,?,?,?,?,?,?, ?,?,?)`,
     [
       lessonTypeId,
+      linkedLessonId,
+      type ,
+      sessionsCount,
       title,
       description,
       shortDesc,
@@ -26,7 +32,7 @@ export const createLesson = async (
       depositAmount,
       durationMin,
       maxParticipants,
-      level,
+      level ,
       isVisible,
       position,
     ],
@@ -53,8 +59,11 @@ export const findLessonByID = async (lessonId) => {
 
 export const updateLesson = async (lessonId, data) => {
   const [result] = await db.query(
-    `UPDATE lessons SET lesson_type_id = ?, title = ?, description = ?, short_desc = ?,  price = ?, deposit_amount = ?, duration_minutes = ?, max_participants = ?, level = ?, is_visible = ?, position =? WHERE id=?`[
-      (data.lessonTypeId,
+    `UPDATE lessons SET lesson_type_id = ?, linked_lesson_id = ?, type = ? , sessions_count = ?, title = ?, description = ?, short_desc = ?,  price = ?, deposit_amount = ?, duration_minutes = ?, max_participants = ?, level = ?, is_visible = ?, position =? WHERE id=?`,[
+      data.lessonTypeId,
+      data.linkedLessonId,
+      data.type,
+      data.sessionsCount,
       data.title,
       data.description,
       data.shortDesc,
@@ -65,7 +74,7 @@ export const updateLesson = async (lessonId, data) => {
       data.level,
       data.isVisible,
       data.position,
-      lessonId)
+      lessonId
     ],
   );
   return result.affectedRows;

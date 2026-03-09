@@ -107,7 +107,7 @@ export const login = asyncHandler(async (req, res) => {
   });
 });
 
-// Connected profile
+// Connected user
 
 export const connectedUser = asyncHandler(async (req, res) => {
   const user = await authModel.findUserById(req.user.id)

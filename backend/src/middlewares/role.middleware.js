@@ -1,7 +1,7 @@
 export const roleMiddleware = (...allowedRoles) => {
     return (req, res, next) => {
 
-        // Security: authMiddleware has to be executed before
+        // authMiddleware executed before
         if (!req.user || !req.user.role) {
             return res.status(403).json({ message: 'Unauthorized' });
         }

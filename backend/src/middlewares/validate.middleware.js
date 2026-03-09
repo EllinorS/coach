@@ -113,6 +113,9 @@ export const createLessonTypeSchema = (req, res, next) => {
 export const createLessonSchema = (req, res, next) => {
   const schema = z.object({
     lessonTypeId: z.number(),
+    linkedLessonId: z.number().optional().nullable(),
+    type: z.enum(["SINGLE", "MULTIPLE"]).optional(),
+    sessionsCount: z.number().optional(),
     title: z.string().min(3).max(255),
     description: z.string().min(10),
     shortDesc: z.string().min(1).max(500),
@@ -132,9 +135,11 @@ export const createLessonSchema = (req, res, next) => {
   }
 };
 
+// create slots
+
 export const createSlotSchema = (req, res, next) => {
   const schema = z.object({
-    LessonId: z.number(),
+    lessonId: z.number(),
     date: z.iso.date(),
     startTime: z.iso.time(),
     endTime: z.iso.time(),
@@ -153,20 +158,25 @@ export const createSlotSchema = (req, res, next) => {
   }
 };
 
+//create booking
+
 export const createBookingSchema = (req, res, next) => {
   const schema = z.object({
+    slotId: z.number(),
     clientName: z.string().max(255),
-    clientEmail: z.email(),
-    clientPhone: z.string().max(50).optional(),
-    clientCountry: z.string().max(100).optional(),
+    email: z.email(),
+    phone: z.string().max(50).optional(),
+    country: z.string().max(100).optional(),
     nbParticipants: z.number(),
-    bookingStatus: z.enum(["PENDING","CONFIRMED","CANCELLED"]).optional(),
+    bookingStatus: z.enum(["PENDING", "CONFIRMED", "CANCELLED"]).optional(),
     cancelReason: z.string().max(500).optional(),
     notes: z.string().optional(),
     internalNotes: z.string().optional(),
-    paymentStatus: z.enum(["UNPAID","DEPOSIT_PAID","FULLY_PAID","REFUNDED"]).optional(),
+    paymentStatus: z
+      .enum(["UNPAID", "DEPOSIT_PAID", "FULLY_PAID", "REFUNDED"])
+      .optional(),
   });
-    try {
+  try {
     schema.parse(req.body);
     next();
   } catch (error) {
@@ -176,4 +186,95 @@ export const createBookingSchema = (req, res, next) => {
   }
 };
 
+//create multiple booking
 
+export const createMultipleBookingSchema = (req, res, next) => {
+  const schema = z.object({
+    lessonId: z.number(),
+    slotIds: z.array(z.number()).min(1),
+    clientName: z.string().max(255),
+    email: z.email(),
+    phone: z.string().max(50).optional(),
+    country: z.string().max(100).optional(),
+    nbParticipants: z.number(),
+  });
+  try {
+    schema.parse(req.body);
+    next();
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: error.issues.map((err) => err.message).join(", ") });
+  }
+};
+
+// reviews
+
+export const createReviewsSchema = (req, res, next) => {
+  const schema = z.object({
+    clientName: z.string().max(255),
+    country: z.string().max(100).optional(),
+    content: z.string(),
+    rating: z.number().int().min(1).max(5),
+    productType: z.enum(["LESSON", "COACHING", "TRIP", "GENERAL"]),
+    reviewDate: z.iso.date().optional(),
+  });
+  try {
+    schema.parse(req.body);
+    next();
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: error.issues.map((err) => err.message).join(", ") });
+  }
+};
+
+// update site content
+export const createContentSchema = (req, res, next) => {
+  const schema = z.object({
+    value: z.string().optional(),
+    mediaId: z.number().optional(),
+  });
+  try {
+    schema.parse(req.body);
+    next();
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: error.issues.map((err) => err.message).join(", ") });
+  }
+};
+
+// create contact
+
+export const createContactSchema = (req, res, next) => {
+  const schema = z.object({
+    firstName: z.string().max(100),
+    lastName: z.string().max(100).optional(),
+    email: z.email(),
+    phone: z.string().max(50).optional(),
+    subject: z.string().max(255).optional(),
+    message: z.string().min(3).max(500),
+  });
+  try {
+    schema.parse(req.body);
+    next();
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: error.issues.map((err) => err.message).join(", ") });
+  }
+};
+
+// update contact
+export const updateContactSchema = (req, res, next) => {
+  const schema = z.object({
+    status: z.enum(['NEW', 'READ', 'REPLIED', 'ARCHIVED']).optional(),
+  })
+  try {
+    schema.parse(req.body)
+    next()
+  } catch (error) {
+    return res.status(400).json({ message: error.issues.map(err => err.message).join(", ") })
+  }
+}

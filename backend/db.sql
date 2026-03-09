@@ -75,6 +75,9 @@ CREATE TABLE lesson_types (
 CREATE TABLE lessons (
   id INT AUTO_INCREMENT PRIMARY KEY,
   lesson_type_id INT NOT NULL,
+  linked_lesson_id INT NULL,
+  type ENUM('SINGLE','MULTIPLE') DEFAULT 'SINGLE',
+  sessions_count INT DEFAULT 1,  
   title VARCHAR(255) NOT NULL,
   description TEXT,
   short_desc VARCHAR(500),
@@ -88,6 +91,7 @@ CREATE TABLE lessons (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (lesson_type_id) REFERENCES lesson_types(id),
+  FOREIGN KEY (linked_lesson_id) REFERENCES lessons(id) ON DELETE SET NULL,
   INDEX idx_lesson_type (lesson_type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -129,11 +133,28 @@ CREATE TABLE time_slots (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
+-- BOOKING GROUPS
+-------------------
+CREATE TABLE booking_multiple (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_email VARCHAR(255) NOT NULL,
+  lesson_id INT NOT NULL,
+  total_price DECIMAL(10,2) NOT NULL,
+  status ENUM('PENDING','CONFIRMED','CANCELLED') DEFAULT 'PENDING',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (lesson_id) REFERENCES lessons(id),
+  INDEX idx_email (client_email),
+  INDEX idx_lesson (lesson_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-------------------
 -- BOOKINGS
 -------------------
 CREATE TABLE bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   slot_id INT NOT NULL,
+  multiple_booking_id INT NULL,
   client_name VARCHAR(255) NOT NULL,
   client_email VARCHAR(255) NOT NULL,
   client_phone VARCHAR(50),
@@ -149,6 +170,8 @@ CREATE TABLE bookings (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (slot_id) REFERENCES time_slots(id),
+  FOREIGN KEY (multiple_booking_id) REFERENCES booking_multiple(id) ON DELETE SET NULL,
+  INDEX idx_multiple (multiple_booking_id),
   INDEX idx_slot (slot_id),
   INDEX idx_email (client_email),
   INDEX idx_status (status)
@@ -180,21 +203,21 @@ CREATE TABLE payments (
 -- TRIP REQUESTS
 -------------------
 CREATE TABLE surf_trip_requests (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  first_name  VARCHAR(255) NOT NULL,
-  email       VARCHAR(255) NOT NULL,
-  phone       VARCHAR(50),
-  country     VARCHAR(100),
-  duration    VARCHAR(100),
-  period      VARCHAR(100),
-  group_size  INT,
-  budget      ENUM('BUDGET','MEDIUM','COMFORT','LUXURY'),
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  country VARCHAR(100),
+  duration VARCHAR(100),
+  period VARCHAR(100),
+  group_size INT,
+  budget ENUM('BUDGET','MEDIUM','COMFORT','LUXURY'),
   wants_video BOOLEAN  DEFAULT 0,
-  status      ENUM('NEW','CONTACTED','IN_PROGRESS','QUOTED','CLOSED','CANCELLED') DEFAULT 'NEW',
+  status ENUM('NEW','CONTACTED','IN_PROGRESS','QUOTED','CLOSED','CANCELLED') DEFAULT 'NEW',
   coach_notes TEXT,
-  quoted_at   DATETIME,
-  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  quoted_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_status (status),
   INDEX idx_email (email)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -204,16 +227,16 @@ CREATE TABLE surf_trip_requests (
 -------------------
 
 CREATE TABLE quiz_questions (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  key_name    VARCHAR(100) NOT NULL UNIQUE,
-  label       TEXT         NOT NULL,
-  type        ENUM('SINGLE','MULTIPLE','RANK','TEXT') NOT NULL,
-  section     VARCHAR(100),
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  key_name VARCHAR(100) NOT NULL UNIQUE,
+  label TEXT NOT NULL,
+  type ENUM('SINGLE','MULTIPLE','RANK','TEXT') NOT NULL,
+  section VARCHAR(100),
   is_required BOOLEAN  DEFAULT 1,
-  is_active   BOOLEAN  DEFAULT 1,
-  position    INT         DEFAULT 0,
-  created_at  DATETIME    DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  is_active BOOLEAN  DEFAULT 1,
+  position INT DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
@@ -221,12 +244,12 @@ CREATE TABLE quiz_questions (
 -------------------
 
 CREATE TABLE quiz_options (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  question_id INT          NOT NULL,
-  label       TEXT         NOT NULL,
-  value       VARCHAR(100) NOT NULL,
-  position    INT          DEFAULT 0,
-  is_active   BOOLEAN   DEFAULT 1,
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  question_id INT NOT NULL,
+  label TEXT NOT NULL,
+  value VARCHAR(100) NOT NULL,
+  position INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT 1,
   INDEX idx_question (question_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -235,19 +258,19 @@ CREATE TABLE quiz_options (
 -- QUIZ USERS ANSWERS
 -------------------
 CREATE TABLE quiz_answers (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  request_id  INT  NOT NULL,
-  question_id INT  NOT NULL,
-  text_value  TEXT,
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  request_id INT NOT NULL,
+  question_id INT NOT NULL,
+  text_value TEXT,
   INDEX idx_request (request_id),
   INDEX idx_question (question_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE quiz_answer_options (
-  id        INT AUTO_INCREMENT PRIMARY KEY,
-  answer_id INT  NOT NULL,
-  option_id INT  NOT NULL,
-  rank      INT  NULL,
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  answer_id INT NOT NULL,
+  option_id INT NOT NULL,
+  rank INT NULL,
   UNIQUE KEY unique_answer_option (answer_id, option_id),
   INDEX idx_answer (answer_id),
   INDEX idx_option (option_id)
@@ -261,15 +284,14 @@ CREATE TABLE reviews (
   id INT AUTO_INCREMENT PRIMARY KEY,
   client_name VARCHAR(255) NOT NULL,
   client_country VARCHAR(100),
-  client_photo_media_id INT NULL,
   content TEXT NOT NULL,
   rating TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  product_type ENUM('COURSE','TRIP','GENERAL') NOT NULL,
-  source VARCHAR(100),
+  product_type ENUM('LESSON', 'COACHING', 'TRIP', 'GENERAL') NOT NULL,
   is_visible BOOLEAN DEFAULT 1,
   position INT DEFAULT 0,
   review_date DATE,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -------------------
@@ -283,6 +305,7 @@ CREATE TABLE site_content (
   type ENUM('TEXT','RICHTEXT','IMAGE_URL','NUMBER') DEFAULT 'TEXT',
   page VARCHAR(50),
   label VARCHAR(255),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -291,15 +314,14 @@ CREATE TABLE site_content (
 -------------------
 
 CREATE TABLE contact_messages (
-  id         INT AUTO_INCREMENT PRIMARY KEY,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(100) NOT NULL,
-  last_name  VARCHAR(100),
-  email      VARCHAR(255) NOT NULL,
-  phone      VARCHAR(50),
-  subject    VARCHAR(255),
-  message    TEXT         NOT NULL,
-  status     ENUM('NEW','READ','REPLIED','ARCHIVED') DEFAULT 'NEW',
-  notes      TEXT,                          -- notes internes du coach
+  last_name VARCHAR(100),
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  subject VARCHAR(255),
+  message TEXT NOT NULL,
+  status ENUM('NEW','READ','REPLIED','ARCHIVED') DEFAULT 'NEW',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_email  (email),
@@ -311,26 +333,17 @@ CREATE TABLE contact_messages (
 -------------------
 ALTER TABLE media
 ADD CONSTRAINT fk_media_user
-FOREIGN KEY (uploaded_by)
-REFERENCES users(id)
+FOREIGN KEY (uploaded_by) REFERENCES users(id)
 ON DELETE SET NULL;
 
 ALTER TABLE users
 ADD CONSTRAINT fk_users_avatar
-FOREIGN KEY (avatar_media_id)
-REFERENCES media(id)
-ON DELETE SET NULL;
-
-ALTER TABLE reviews
-ADD CONSTRAINT fk_reviews_media
-FOREIGN KEY (client_photo_media_id)
-REFERENCES media(id)
+FOREIGN KEY (avatar_media_id) REFERENCES media(id)
 ON DELETE SET NULL;
 
 ALTER TABLE site_content
 ADD CONSTRAINT fk_sitecontent_media
-FOREIGN KEY (media_id)
-REFERENCES media(id)
+FOREIGN KEY (media_id) REFERENCES media(id)
 ON DELETE SET NULL;
 
 ALTER TABLE quiz_options

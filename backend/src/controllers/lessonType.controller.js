@@ -45,28 +45,27 @@ export const updateLessonType = asyncHandler(async (req, res) => {
   const existingLessonType = await lessonTypeModel.findLessonTypeByID(id);
   if (!existingLessonType)
     return res.status(404).json({ message: "Lesson type not found." });
-  
+
   const updatedData = {
     name: req.body.name ?? existingLessonType.name,
-    slug: req.body.slug ?? existingLessonType.slug, 
-    description: req.body.description ?? existingLessonType.description, 
-    isActive: req.body.isActive ?? existingLessonType.is_active, 
-    position: req.body.position ?? existingLessonType.position
-  }
+    slug: req.body.slug ?? existingLessonType.slug,
+    description: req.body.description ?? existingLessonType.description,
+    isActive: req.body.isActive ?? existingLessonType.is_active,
+    position: req.body.position ?? existingLessonType.position,
+  };
 
-  await lessonTypeModel.updateLessonType(id, updatedData)
+  await lessonTypeModel.updateLessonType(id, updatedData);
 
-    res.status(200).json({ message: "lesson type updated" });
+  res.status(200).json({ message: "lesson type updated" });
 });
 
 // delete lesson type by id
 export const deleteLessonType = asyncHandler(async (req, res) => {
-  const {id} = req.params
+  const { id } = req.params;
   const existingLessonType = await lessonTypeModel.findLessonTypeByID(id);
   if (!existingLessonType)
     return res.status(404).json({ message: "Lesson type not found." });
-  await lessonTypeModel.deleteLessonTypeById(id)
+  await lessonTypeModel.deleteLessonTypeById(id);
 
   res.status(200).json({ message: "Lesson Type deleted" });
-
 });

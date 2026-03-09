@@ -6,6 +6,9 @@ import * as lessonModel from "../models/lesson.model.js";
 export const createLesson = asyncHandler(async (req, res) => {
   const {
     lessonTypeId,
+    linkedLessonId,
+    type,
+    sessionsCount,
     title,
     description,
     shortDesc,
@@ -20,6 +23,9 @@ export const createLesson = asyncHandler(async (req, res) => {
 
   const createdlesson = await lessonModel.createLesson(
     lessonTypeId,
+    linkedLessonId ?? null,
+    type ?? 'SINGLE',
+    sessionsCount ?? 1,
     title,
     description,
     shortDesc,
@@ -61,13 +67,16 @@ export const updateLesson = asyncHandler(async (req, res) => {
 
   const updatedData = {
     lessonTypeId: req.body.lessonTypeId ?? existingLesson.lesson_type_id,
+    linkedLessonId: req.body.linkedLessonId ?? existingLesson.linked_lesson_id,
+    type: req.body.type ?? existingLesson.type,
+    sessionsCount: req.body.sessionsCount ?? existingLesson.sessions_count,
     title: req.body.title ?? existingLesson.title,
     description: req.body.description ?? existingLesson.description,
     shortDesc: req.body.shortDesc ?? existingLesson.short_desc,
     price: req.body.price ?? existingLesson.price,
     depositAmount: req.body.depositAmount ?? existingLesson.deposit_amount,
-    durationMin: req.body.durationMin ?? existingLesson.duration_min,
-    maxParticipants: req.body.maxParticipants ?? existingLesson.max_participants,
+    durationMin: req.body.durationMin ?? existingLesson.duration_minutes,
+    maxParticipants:req.body.maxParticipants ?? existingLesson.max_participants,
     level: req.body.level ?? existingLesson.level,
     isVisible: req.body.isVisible ?? existingLesson.is_visible,
     position: req.body.position ?? existingLesson.position,

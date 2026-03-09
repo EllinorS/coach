@@ -35,7 +35,7 @@ export const findUserByEmail = async (email) => {
 
 export const findUserById = async (id) => {
  const [rows] = await db.query(
-  `SELECT users.id, users.email, users.first_name, users.last_name, users.avatar_media_id, users.last_login, roles.name AS role FROM users JOIN. roles ON roles.id = users.role_id WHERE users.id = ? AND users.is_active = 1`, [id]
+  `SELECT users.id, users.email, users.first_name, users.last_name, users.avatar_media_id, users.last_login, roles.name AS role FROM users JOIN roles ON roles.id = users.role_id WHERE users.id = ? AND users.is_active = 1`, [id]
  )
  return rows[0] || null
 }
