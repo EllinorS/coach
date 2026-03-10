@@ -10,7 +10,7 @@ router.post("/", authMiddleware, roleMiddleware("SUPER_ADMIN"), createReviewsSch
 router.get("/", authMiddleware, roleMiddleware("SUPER_ADMIN"), getAllReviews)
 router.get("/public", getVisibleReviews)
 router.get("/:id", authMiddleware, roleMiddleware("SUPER_ADMIN"), getReviewById)
-router.put("/:id", authMiddleware, roleMiddleware("SUPER_ADMIN"), createReviewsSchema, updateReview)
+router.put("/:id", authMiddleware, roleMiddleware("SUPER_ADMIN"), updateReview)
 router.delete("/:id", authMiddleware, roleMiddleware("SUPER_ADMIN"), deleteReview)
 
 export default router

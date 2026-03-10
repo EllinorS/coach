@@ -49,8 +49,8 @@ export const deleteMedia = async (mediaId) => {
 
 // connecting table media lesson
 
-    // attach media to a lesson
-export const attachMediaToLesson = async ({
+    // link media to a lesson
+export const linkMediaToLesson = async ({
   lessonId,
   mediaId,
   isCover = 0,
@@ -67,7 +67,7 @@ export const attachMediaToLesson = async ({
   return result.insertId;
 };
     // detach media to a lesson
-export const detachMediaFromLesson = async (lessonId, mediaId) => {
+export const unlinkMediaFromLesson = async (lessonId, mediaId) => {
   const [result] = await db.query(
     `DELETE FROM lesson_media
     WHERE lesson_id = ? AND media_id = ?`,

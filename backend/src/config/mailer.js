@@ -1,6 +1,20 @@
 import "dotenv/config";
 import nodemailer from "nodemailer";
 
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString('en-NZ', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC'
+  })
+}
+
+const formatTime = (time) => {
+  return time.slice(0, 5)
+}
+
 export const transporter = nodemailer.createTransport({
   host: process.env.BREVO_SMTP_HOST,
   port: Number(process.env.BREVO_SMTP_PORT),
@@ -56,7 +70,7 @@ export const bookingConfirmationEmail = async (
     to: email,
     subject: "Booking confirmation",
     html: `<h2>   Hi ${name} ! </h2>
-        <p>Your ${lessonType} is confirmed for ${date} from ${startTime} to ${endTime}<br/>
+        <p>Your ${lessonType} is confirmed for ${formatDate(date)} from ${formatTime(startTime)} to ${formatTime(endTime)}<br/>
         Need to cancel this?</p> 
         <a href="${process.env.CLIENT_URL}/cancel?token=${cancelToken}">Please follow this link</a>`,
   });
@@ -73,7 +87,7 @@ export const multipleBookingConfirmationEmail = async (
 
     const slotsList = slots.map((slot, index) => `
     <p>
-      📅 ${slot.date} — ${slot.start_time} to ${slot.end_time}<br/>
+      📅 ${formatDate(slot.date)} — ${formatTime(slot.start_time)} to ${formatTime(slot.end_time)}<br/>
       <a href="${process.env.CLIENT_URL}/cancel?token=${cancelTokens[index]}">Cancel this session</a>
     </p>
   `).join("")
@@ -98,6 +112,7 @@ export const cancellationEmail = async (
   date,
   startTime,
   cancelReason,
+  paymentStatus
 ) => {
   let paymentMessage = "";
 
@@ -114,10 +129,30 @@ export const cancellationEmail = async (
     to: email,
     subject: "Booking cancellation",
     html: `<h2>   Hi ${name} ! </h2>
-        <p>Unfortunately your ${lessonType} on ${date} at ${startTime} has been cancelled.<br/>
+        <p>Unfortunately your ${lessonType} on ${formatDate(date)} at ${formatTime(startTime)} has been cancelled.<br/>
         Reason: ${cancelReason}</br></p>
         ${paymentMessage} </br>
         <a href="${process.env.CLIENT_URL}/lessons">Book another lesson</a>`,
+  });
+};
+
+// cancellation by client
+
+export const clientCancellationEmail = async (email, name, lessonType, date, startTime) => {
+  await transporter.sendMail({
+    from: "Wave Coach <ellinor.st@gmail.com>",
+    to: email,
+    subject: "Booking cancellation confirmed",
+    html: `
+      <h2>Hi ${name}!</h2>
+      <p>Your ${lessonType} on ${formatDate(date)} at ${formatTime(startTime)} has been successfully cancelled.</p>
+      ${isMultiple 
+        ? `<p>Please contact us to reschedule this session on another available slot.</p>
+           <a href="mailto:ellinor.st@gmail.com">Contact us</a>`
+        : `<p>We hope to see you back in the water soon!</p>
+           <a href="${process.env.CLIENT_URL}/lessons">Book another lesson</a>`
+      }
+    `,
   });
 };
 
@@ -140,6 +175,7 @@ export const newContactEmail = async (
     <p>First name : ${firstName}<br/>
       Last name : ${lastName}<br/>
       Phone: ${phone}<br/>
+      Email: ${email} <br/>
       Message: ${message}</p>`
   });
 };

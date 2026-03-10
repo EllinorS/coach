@@ -57,7 +57,7 @@ export const findSlotsByLessonId = async (lessonId) => {
 
 // find clients by slot id
  export const findBookingsBySlotId = async (slotId) => {
-  const [rows] = await db.query(`SELECT * FROM bookings WHERE slot_id = ? AND status!=CANCELLED`, [slotId])
+  const [rows] = await db.query(`SELECT * FROM bookings WHERE slot_id = ? AND status!='CANCELLED'`, [slotId])
 return rows 
 }
 
@@ -84,7 +84,7 @@ export const updateSlot = async (slotId, data) => {
 // cancel time slot + booking
 
 export const cancelSlotAndBooking = async (slotId, cancelReason) => {
-  await db.query(`UPDATE time_slot SET is_cancelled = 1, cancel_reason = ? WHERE id=?`, [cancelReason, slotId])
+  await db.query(`UPDATE time_slots SET is_cancelled = 1, cancel_reason = ? WHERE id=?`, [cancelReason, slotId])
   await db.query(`UPDATE bookings SET status ='CANCELLED', cancel_reason = ? WHERE slot_id = ? AND status !='CANCELLED'`, [cancelReason, slotId])
 }
 

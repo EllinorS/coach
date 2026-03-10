@@ -2,6 +2,7 @@ import asyncHandler from "../middlewares/asyncHandler.middleware.js";
 import * as bookingModel from "../models/booking.model.js";
 import {
   bookingConfirmationEmail,
+  clientCancellationEmail,
   multipleBookingConfirmationEmail,
 } from "../config/mailer.js";
 import { v4 as uuid4 } from "uuid";
@@ -36,7 +37,8 @@ export const createBooking = asyncHandler(async (req, res) => {
   // create a cancel token for clients to be able to cancel 24h prior to booking
 
   const cancelToken = uuid4();
-  const slotDateTime = new Date(`${slot.date}T${slot.start_time}`);
+  const dateOnly = new Date(slot.date).toISOString().split("T")[0];
+  const slotDateTime = new Date(`${dateOnly}T${slot.start_time}`);
   const cancelTokenExpiresAt = new Date(
     slotDateTime.getTime() - 24 * 60 * 60 * 1000,
   );
@@ -141,14 +143,16 @@ export const createMultipleBookings = asyncHandler(async (req, res) => {
     lesson.price,
   );
 
-  // create one booking per slot
+  // create a cancel token for each slot booked for clients to be able to cancel 24h prior to booking
   const cancelTokens = [];
   for (const slot of slots) {
     const cancelToken = uuid4();
-    const slotDateTime = new Date(`${slot.date}T${slot.start_time}`);
+    const dateOnly = new Date(slot.date).toISOString().split("T")[0];
+    const slotDateTime = new Date(`${dateOnly}T${slot.start_time}`);
     const cancelTokenExpiresAt = new Date(
       slotDateTime.getTime() - 24 * 60 * 60 * 1000,
     );
+
     cancelTokens.push(cancelToken);
     await bookingModel.createBooking(
       slot.id,
@@ -233,18 +237,6 @@ export const deleteBooking = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Booking deleted" });
 });
 
-// cancel booking
-export const cancelBookingByToken = asyncHandler(async (req, res) => {
-  const { token } = req.query;
-
-  const booking = await bookingModel.findBookingByCancelToken(token);
-  if (!booking) {
-    return res.status(400).json({ message: "Invalid or expired token" });
-  }
-  await bookingModel.cancelBooking(booking.id);
-  res.status(200).json({ message: "Booking cancelled." });
-});
-
 // preview booking before cancel
 
 export const previewBooking = asyncHandler(async (req, res) => {
@@ -254,4 +246,27 @@ export const previewBooking = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid or expired token" });
   }
   res.status(200).json(booking);
+});
+
+// cancel booking
+export const cancelBookingByToken = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+  const booking = await bookingModel.findBookingByCancelToken(token);
+  if (!booking) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+  const slot = await slotModel.findSlotById(booking.slot_id);
+  await bookingModel.cancelBooking(booking.id);
+
+  const isMultiple = booking.multiple_booking_id !== null;
+  await clientCancellationEmail(
+    booking.client_email,
+    booking.client_name,
+    slot.lesson_type,
+    slot.date,
+    slot.start_time,
+    isMultiple,
+  );
+
+  res.status(200).json({ message: "Booking cancelled." });
 });

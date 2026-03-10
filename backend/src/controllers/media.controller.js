@@ -94,3 +94,25 @@ export const deleteMedia = asyncHandler(async (req, res) => {
   await mediaModel.deleteMedia(id);
   res.status(200).json({ message: "Media deleted" });
 });
+
+// link media to lesson
+export const linkMediaToLesson = asyncHandler(async (req, res) => {
+  const { lessonId } = req.params;
+  const { mediaId, isCover, position } = req.body;
+
+  await mediaModel.linkMediaToLesson({
+    lessonId,
+    mediaId,
+    isCover: isCover ?? 0,
+    position: position ?? 0,
+  });
+  res.status(201).json({ message: "Media attached to lesson" })
+});
+
+//unlink media
+export const unlinkMedia = asyncHandler(async (req, res) => {
+  const { lessonId } = req.params
+  const { mediaId } = req.body
+  await mediaModel.detachMediaFromLesson(lessonId, mediaId)
+  res.status(200).json({ message: "Media detached from lesson" })
+})

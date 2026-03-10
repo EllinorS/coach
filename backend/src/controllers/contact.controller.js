@@ -1,6 +1,6 @@
 import asyncHandler from "../middlewares/asyncHandler.middleware.js";
 import * as contactModel from "../models/contact.model.js";
-import {newContactEmail} from "../config/mailer.js"
+import { newContactEmail } from "../config/mailer.js";
 
 // create contact
 
@@ -15,7 +15,7 @@ export const createContact = asyncHandler(async (req, res) => {
     message,
   );
 
-  await newContactEmail(firstName, lastName, email, phone, subject, message)
+  await newContactEmail(firstName, lastName, email, phone, subject, message);
 
   res.status(201).json({ message: "Message sent." });
 });
@@ -35,6 +35,7 @@ export const getContactById = asyncHandler(async (req, res) => {
 
 export const updateContact = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const { messageStatus } = req.body;
   const contactMessage = await contactModel.findContactById(id);
   if (!contactMessage)
     return res.status(404).json({ message: "message not found." });

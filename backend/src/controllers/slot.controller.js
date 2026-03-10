@@ -92,12 +92,11 @@ if (existingSlot.is_cancelled) return res.status(400).json({ message: "Slot alre
   
   for (const client of clients) {
   await cancellationEmail(
-    client.client_name,
     client.client_email,
+    client.client_name,
     existingSlot.lesson_type,
     existingSlot.date,
     existingSlot.start_time,
-    existingSlot.end_time,
     cancelReason,
     client.payment_status
   )

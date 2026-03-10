@@ -5,7 +5,7 @@ import { db } from "../config/db.js";
 export const createContact = async (
 firstName, lastName, email, phone, subject, message
 ) => {
-    const [result] = await db.query("INSERT INTO contact_messages (first_name, last_name, email, phone, subject, message) VALUES (?,?,?,?,?,?,?)",[firstName, lastName, email, phone, subject, message])
+    const [result] = await db.query("INSERT INTO contact_messages (first_name, last_name, email, phone, subject, message) VALUES (?,?,?,?,?,?)",[firstName, lastName, email, phone, subject, message])
 
     return result.insertId;
 }
